@@ -1,0 +1,41 @@
+{
+  "skill_name": "test-plan-generation",
+  "trigger": {
+    "positive": [
+      { "prompt": "Write a test plan for this story: show the model next to each device name", "top_k": 3 },
+      { "prompt": "Create a QA checklist from these acceptance criteria", "top_k": 3 },
+      { "prompt": "Create a testing plan for the changes in this pull request", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Write a failing test for this bug before fixing it", "owner": "test-driven-development" },
+      { "prompt": "Break this spec into small implementable tasks with dependency ordering", "owner": "planning-and-task-breakdown" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Create a testing plan for this story. Show the device model next to the device name. Hide the model when missing or empty. Long names and model values must remain readable without overlap. Keep the layout aligned on browser resize and preserve existing device details and actions. Use Testing Plan: followed by checked Markdown boxes, with two spaces after each marker.",
+      "expected_output": "One fenced Markdown block containing Testing Plan: and a concise flat checked checklist covering the story, without execution claims.",
+      "expectations": [
+        "The response contains exactly one fenced markdown block and no commentary outside it",
+        "The block starts with the literal heading Testing Plan: followed by a blank line and a flat list with no subheadings or tables",
+        "Each item starts with - [x] followed by two spaces and Verify that, and ends with a period",
+        "The checklist covers model placement, missing or empty models, long-value readability, browser-resize alignment, and existing details and actions",
+        "The response does not claim tests were executed or passed and does not inspect unrelated repository files"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "dialogue",
+      "prompt": "Write a test plan for this story using unchecked boxes: reject duplicate device serial numbers, leave the existing device unchanged on rejection, and allow unique serial numbers to be saved. Do not execute tests.",
+      "expected_output": "A story checklist using Testing Plan: and unchecked markers, covering uniqueness and preservation without irrelevant UI checks.",
+      "expectations": [
+        "The output is one fenced markdown block headed Testing Plan: with a flat list of unchecked checkboxes",
+        "The checklist covers saving a unique serial number, rejecting a duplicate, and preserving the existing device on rejection",
+        "No device-model display or browser-resize checks are copied from the example",
+        "No tests are executed or claimed to have passed and no unspecified case-sensitivity rules are invented"
+      ]
+    }
+  ]
+}

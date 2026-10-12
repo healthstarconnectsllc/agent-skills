@@ -30,7 +30,7 @@ Infer all fields from the available context — open files, git diff, PR descrip
 4. **Risk level** — Derive from the risk table in Step 2.
 5. **Data impact** — Infer from field names, entity types, or migration files in scope.
 6. **Implementation steps** — Extract from the diff or conversation; order them.
-7. **Testing approach** — Infer from test files touched or test types present in the codebase.
+7. **Testing approach** — Use `test-plan-generation` with the supplied story, acceptance criteria, and established change scope to generate concrete validation scenarios.
 8. **Rollback** — Derive concrete revert steps from the implementation plan.
 9. **Related controls** — Infer from PR labels, issue references, or commit messages if present.
 
@@ -47,6 +47,23 @@ Use this table to set the risk level:
 | Schema migration, auth change, external integration, data deletion | High |
 
 Default checked box: **Low**. Override if conditions above indicate otherwise.
+
+### Step 2a: Generate the Testing Plan
+
+Load and follow [test-plan-generation](../test-plan-generation/SKILL.md) to generate
+the Testing Plan from the context gathered in Step 1. Use its story-style checklist
+format for this section, including when the context comes from a branch or PR.
+Cover each behavior-changing implementation step and applicable acceptance criteria,
+edge cases, backward compatibility, and failure or rollback risks.
+
+Embed only the generated checklist items in the template below. Do not include a
+second heading, nested code fence, testing-type checklist, or Test Cases table.
+The complete change spec remains one fenced Markdown block.
+
+When expectations cannot be inferred, follow this skill's no-question rule: include
+a concise `TBD` checklist item rather than asking or inventing an expected result.
+Checked testing markers are formatting, not evidence that testing is completed.
+Honor an explicit request for unchecked testing markers instead.
 
 ### Step 3: Write the Document
 
@@ -99,12 +116,9 @@ Does this change impact any of the following?
 
 ---
 
-## Testing Plan
-<!-- How will this change be validated? -->
-- [{unit_x}] Unit Testing
-- [{int_x}] Integration Testing
-- [{manual_x}] Manual Testing
-- [{other_test_x}] Other: {other_test}
+Testing Plan:
+
+{testing_plan_checklist}
 
 ---
 
@@ -147,6 +161,9 @@ Return exactly one fenced markdown block containing the completed document. Do n
 - Data Impact must have exactly one `[x]`
 - Do not fabricate implementation steps or control IDs that cannot be inferred — use `TBD`
 - Do not add sections not in the template
+- Testing Plan must use the `test-plan-generation` checklist: `- [x]  Verify that ...` with two spaces after each marker, unless unchecked markers are requested
+- Testing Plan must cover every behavior-changing implementation step and applicable backward-compatibility and failure/rollback risks
+- Checked testing markers do not mean tests passed; leave `Testing completed prior to deployment` unchecked unless execution evidence is available
 
 ## Common Rationalizations
 
@@ -163,7 +180,8 @@ Return exactly one fenced markdown block containing the completed document. Do n
 - Any checkbox left neither checked nor unchecked
 - Risk level set to Low for a schema migration, auth change, or data deletion
 - Rollback plan that says only "revert the PR"
-- Testing plan with no boxes checked
+- Testing plan containing only test types, a Test Cases table, or no concrete scenarios
+- Testing completion claimed without execution evidence
 - Document returned outside a fenced block
 
 ## Verification
@@ -176,6 +194,8 @@ Before finalizing, confirm:
 - [ ] Risk level has exactly one `[x]` and matches the risk table
 - [ ] Data impact has exactly one `[x]`
 - [ ] Implementation plan has numbered steps
-- [ ] Testing plan has at least one `[x]`
+- [ ] Testing Plan was generated using `test-plan-generation` and contains concrete expected outcomes or explicit `TBD` items
+- [ ] Testing Plan uses the flat checklist format with no nested fence or duplicate heading
+- [ ] Testing completion is not inferred from checked presentation markers
 - [ ] Rollback plan has concrete, ordered steps
 - [ ] Output is exactly one fenced markdown block

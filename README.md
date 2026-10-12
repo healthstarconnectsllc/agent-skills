@@ -240,6 +240,7 @@ The commands above are entry points. The pack includes 26 skills total — 25 li
 | Skill | What It Does | Use When |
 |-------|-------------|----------|
 | [planning-and-task-breakdown](skills/planning-and-task-breakdown/SKILL.md) | Decompose specs into small, verifiable tasks with acceptance criteria and dependency ordering | You have a spec and need implementable units |
+| [test-plan-generation](skills/test-plan-generation/SKILL.md) | Generate concise, copyable Markdown testing checklists from stories, acceptance criteria, or code changes | You need a testing plan for a story, branch, or pull request |
 
 ### Build - Write the code
 
