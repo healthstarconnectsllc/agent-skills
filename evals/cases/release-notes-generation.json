@@ -1,0 +1,40 @@
+{
+  "skill_name": "release-notes-generation",
+  "trigger": {
+    "positive": [
+      { "prompt": "Generate release notes for this pull request: https://github.com/acme/app/pull/42", "top_k": 3 },
+      { "prompt": "Write release notes for release/2.4.0 from the issues it closes", "top_k": 3 },
+      { "prompt": "Summarize this release PR for a non-technical audience", "top_k": 3 }
+    ],
+    "negative": [
+      { "prompt": "Write a formal change record with rollback steps for this database change", "owner": "change-spec" },
+      { "prompt": "Create a testing checklist for this story", "owner": "test-plan-generation" }
+    ]
+  },
+  "evals": [
+    {
+      "id": 1,
+      "kind": "dialogue",
+      "prompt": "Generate release notes for release PR 42 (head branch release/2.4.0). Its body says: Closes #11, Closes #7. Issue 11 is labeled BE and titled '[BE] Upgrade Spring Boot to 4.1.2'. Issue 7 is labeled bug, FE and titled 'Device list shows duplicates after search'. Today is Oct 29, 2026. Address the summary to @jane.doe.",
+      "expected_output": "One raw markdown block with a versioned heading, two bullets in PR-body order with correct prefixes and links, and a two-sentence closing summary.",
+      "expectations": [
+        "The response contains one fenced markdown block starting with '## Release Notes 2.4.0 (Oct 29, 2026)'",
+        "Bullets appear in the order #11 then #7, each with a [#n](https://github.com/<owner>/<repo>/issues/<n>) hyperlink",
+        "The #11 bullet uses 'BE:' and ends its sentence with 'No user impact' and avoids version numbers and framework jargon",
+        "The #7 bullet uses 'BugFix FE:' and describes the outcome in one plain-English sentence",
+        "The block ends with a blank line and a two-sentence summary addressed to the recipient given in the prompt that ends with 'If you notice any issues in these areas, please let us know.'"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "dialogue",
+      "prompt": "Generate release notes for release PR 50 (release/3.0.1). Its body says: Fixes #5. Issue 5 is titled 'Refactor sync job' with no labels and a body that only says 'see design doc'.",
+      "expected_output": "A single bullet with a best-reading description and a 'Please confirm' list after the code block.",
+      "expectations": [
+        "The notes contain exactly one bullet for #5 with one sentence and a hyperlink",
+        "The behavior is not invented beyond what the ticket states",
+        "A 'Please confirm' list appears after the code block naming #5 and its missing label or details"
+      ]
+    }
+  ]
+}
