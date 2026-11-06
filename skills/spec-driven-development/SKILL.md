@@ -135,6 +135,11 @@ Don't silently fill in ambiguous requirements. The spec's entire purpose is to s
 ## Testing Strategy
 [Framework, test locations, coverage requirements, test levels]
 
+## E2E Test Plan (Playwright)
+[Include when the change is user-visible or spans UI + API. Otherwise: "N/A — <reason>".
+Flat checklist of "Verify that ..." scenarios, each tied to a success criterion, plus
+script location (e.g. e2e/), base URL, auth/test-data setup, and the run command.]
+
 ## Boundaries
 - Always: [...]
 - Ask first: [...]
@@ -152,6 +157,14 @@ already uses OpenSpec or another specification system, keep that system's
 artifact format and storage conventions instead of creating a duplicate
 `SPEC.md`. This skill owns the clarification, content, and approval gates; the
 external tool owns how the approved spec is represented.
+
+**Consider a Playwright test plan.** For any change a user can see or drive through a browser (new or changed screens, forms, navigation, login/role-gated views, UI + API flows), decide during Specify whether it needs a Playwright E2E plan:
+
+1. **Decide:** Needed if success criteria describe observable browser behavior; skip (write "N/A — <reason>") for backend-only, config, or refactor changes with no UI effect.
+2. **Check what exists:** Look for `playwright.config.*`, an `e2e/` or `tests/e2e/` folder, and the `@playwright/test` dependency. Reuse the existing config, fixtures, and page objects; do not add Playwright or change CI config without asking (Ask first).
+3. **Write the plan:** In the spec's `E2E Test Plan (Playwright)` section, list scenarios in the `test-plan-generation` checklist style (`- [ ] Verify that ...`), covering the happy path, role/permission differences, validation and error states, and a nearby regression. Each scenario traces to a success criterion.
+4. **Record logistics:** base URL and environment, how to authenticate (e.g. stub login or seeded user, never real credentials), test data setup and cleanup, and the exact run command (e.g. `npx playwright test e2e/<feature>.spec.ts`).
+5. **Do not write scripts yet.** Scripts are produced per slice in Phase 4 (see `incremental-implementation`).
 
 **Reframe instructions as success criteria.** When receiving vague requirements, translate them into concrete conditions:
 
@@ -182,6 +195,7 @@ With the validated spec, generate a technical implementation plan:
 3. Note risks and mitigation strategies
 4. Identify what can be built in parallel vs. what must be sequential
 5. Define verification checkpoints between phases
+6. If the spec has a Playwright test plan, map each scenario to the implementation slice that makes it passable, and note any prerequisites (test data, seeded users, environment, Playwright setup)
 
 > Follow `planning-and-task-breakdown` for the dependency-graph mapping and vertical-slicing mechanics behind these steps; it is the canonical source. The bullets above are a lightweight summary; if they ever diverge, `planning-and-task-breakdown` takes precedence.
 >
@@ -196,6 +210,7 @@ Break the plan into discrete, implementable tasks:
 - Each task should be completable in a single focused session
 - Each task has explicit acceptance criteria
 - Each task includes a verification step (test, build, manual check)
+- For user-visible tasks, the verification step includes the Playwright scenario(s) from the spec's E2E plan, and the task lists the spec file(s) to add or update
 - Tasks are ordered by dependency, not by perceived importance
 - No task should require changing more than ~5 files
 
@@ -205,8 +220,8 @@ Break the plan into discrete, implementable tasks:
 ```markdown
 - [ ] Task: [Description]
   - Acceptance: [What must be true when done]
-  - Verify: [How to confirm — test command, build, manual check]
-  - Files: [Which files will be touched]
+  - Verify: [How to confirm — test command, build, manual check, Playwright scenario if user-visible]
+  - Files: [Which files will be touched, including e2e/*.spec.ts if applicable]
 ```
 
 ### Phase 4: Implement
@@ -253,6 +268,7 @@ Before proceeding to implementation, confirm:
 - [ ] The human has reviewed and approved the spec
 - [ ] The turn ended after saving the spec; approval came in a later turn
 - [ ] Success criteria are specific and testable
+- [ ] The E2E Test Plan (Playwright) section is filled in for user-visible changes, or marked N/A with a reason
 - [ ] Boundaries (Always/Ask First/Never) are defined
 - [ ] The spec is saved to a file in the repository
 - [ ] If the request bundles several independently testable capabilities, a capability map (module ids, dependency direction, build order) was approved before any module spec was written

@@ -86,6 +86,18 @@ Slice 3: Add offline support and reconnection
 
 If Slice 1 fails, you discover it before investing in Slices 2 and 3.
 
+## Playwright E2E Scripts per Slice
+
+When the spec has an `E2E Test Plan (Playwright)` section (or the slice changes browser-visible behavior), treat the matching Playwright script as part of the slice, not a final phase:
+
+1. **Pick scenarios:** Take only the plan scenarios that this slice makes passable. If there is no plan and the slice is user-visible, draft a short one first (see `test-plan-generation`) and confirm scope before scripting.
+2. **Reuse existing setup:** Use the project's `playwright.config.*`, fixtures, page objects, and `e2e/` layout. If Playwright is not set up, propose setup as its own slice and ask first; do not add dependencies or CI changes silently.
+3. **Write the script with the slice:** Add or extend `e2e/<feature>.spec.ts` covering the slice's happy path plus its key negative or role-based case. Prefer role/label/test-id locators and web-first assertions; no fixed sleeps; each test independent with its own data setup and cleanup; no real credentials or secrets.
+4. **Run it:** Run only the new or affected spec (e.g. `npx playwright test e2e/<feature>.spec.ts`) against the running app, and run the existing E2E suite if the slice touches shared UI. A failing script means the slice is not done; fix the code or the script, never weaken assertions to pass.
+5. **Commit together:** The script ships in the same commit as the slice it verifies.
+
+Skip this for slices with no browser-visible effect (backend-only, config, refactor), and say so in the slice summary instead of adding a script.
+
 ## Implementation Rules
 
 ### Rule 0: Simplicity First
@@ -206,6 +218,7 @@ After each increment, verify with the repository's own commands (see the test-dr
 - [ ] Type checking passes, where the stack has one (`npx tsc --noEmit`, `mypy`, ...)
 - [ ] Linting passes (the repository's lint command)
 - [ ] The new functionality works as expected
+- [ ] For browser-visible slices, the Playwright script for the slice exists and passes (or the slice is documented as having no UI effect)
 - [ ] The change is committed with a descriptive message
 
 **Note:** Run each verification command after a change that could affect it. After a successful run, don't repeat the same command unless the code has changed since — re-running on unchanged code adds no information.
@@ -214,6 +227,7 @@ After each increment, verify with the repository's own commands (see the test-dr
 
 | Rationalization | Reality |
 |---|---|
+| "I'll write all the Playwright tests after the UI is done" | Late E2E scripts test what was built, not what was specified, and failures are hard to attribute. Script each slice as it lands. |
 | "I'll test it all at the end" | Bugs compound. A bug in Slice 1 makes Slices 2-5 wrong. Test each slice. |
 | "It's faster to do it all at once" | It *feels* faster until something breaks and you can't find which of 500 changed lines caused it. |
 | "These changes are too small to commit separately" | Small commits are free. Large commits hide bugs and make rollbacks painful. |
@@ -227,6 +241,8 @@ After each increment, verify with the repository's own commands (see the test-dr
 - Multiple unrelated changes in a single increment
 - "Let me just quickly add this too" scope expansion
 - Skipping the test/verify step to move faster
+- A user-visible slice merged with no Playwright coverage and no note explaining why
+- Playwright tests that pass by weakening assertions, using fixed sleeps, or depending on other tests' data
 - Build or tests broken between increments
 - Large uncommitted changes accumulating
 - Building abstractions before the third use case demands it
@@ -242,6 +258,7 @@ After completing all increments for a task:
 - [ ] The full test suite passes
 - [ ] The build is clean
 - [ ] The feature works end-to-end as specified
+- [ ] Every scenario in the spec's Playwright test plan has a passing script, or is explicitly deferred with a reason
 - [ ] No uncommitted changes remain
 
 ## See Also
